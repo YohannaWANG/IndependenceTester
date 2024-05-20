@@ -56,21 +56,21 @@ def generate_syn_data(n, beta, distribution):
         X = np.random.normal(mu, sigma, n)
         Y = beta * X + np.random.normal(mu, sigma, n)
     # Gumbel distribution
-    if distribution == 'gumbel':
+    elif distribution == 'gumbel':
         mu, scale = 0, 1
         eta_x = np.random.gumbel(mu, scale, n)
         X = eta_x - np.mean(eta_x)
         eta_y = np.random.gumbel(mu, scale, n)
         Y = beta * X + eta_y - np.mean(eta_y)
     # Beta distribution
-    if distribution == 'beta':
-        a, b = 2, 5
+    elif distribution == 'beta_distribution' :
+        a, b = 1, 5
         eta_x = np.random.beta(a, b, n)
-        X = eta_x - np.mean(eta_x)
         eta_y = np.random.beta(a, b, n)
+        X = eta_x - np.mean(eta_x)
         Y = beta * X + eta_y - np.mean(eta_y)
     # Fold Gaussian
-    if distribution == 'foldgaussian':
+    elif distribution == 'foldgaussian':
         from scipy.stats import foldnorm
         c = 1.95
         eta_x = foldnorm.rvs(c, size=n)
@@ -78,16 +78,16 @@ def generate_syn_data(n, beta, distribution):
         eta_y = foldnorm.rvs(c, size=n)
         Y = beta * X + eta_y - np.mean(eta_y)
     #  irwin-hall distribution
-    if distribution == 'irwin-hall':
+    elif distribution == 'irwin-hall':
         X = np.random.uniform(0, 1, n) + np.random.uniform(0, 1, n)  # + np.random.uniform(0, 1, n)  + np.random.uniform(0, 1, n)
         Y = beta * X + np.random.uniform(0, 1, n) + np.random.uniform(0, 1,n)  # + np.random.uniform(0, 1, n)  + np.random.uniform(0, 1, n)
     # Laplace distribution
-    if distribution == 'laplace':
+    elif distribution == 'laplace':
         from scipy.stats import laplace
         X = laplace.rvs(size=n)
         Y = beta * X + laplace.rvs(size=n)
     # Rayleigh distribution
-    if distribution == 'rayleigh':
+    elif distribution == 'rayleigh':
         from scipy.stats import rayleigh
         eta_x = rayleigh.rvs(size=n)
         X = eta_x - np.mean(eta_x)
@@ -95,14 +95,14 @@ def generate_syn_data(n, beta, distribution):
         Y = beta * X + eta_y - np.mean(eta_y)
 
     # Weibull distribution
-    if distribution == 'weibull':
+    elif distribution == 'weibull':
         eta_x = np.random.weibull(a, n)
         X = eta_x - np.mean(eta_x)
         eta_y = np.random.weibull(a, n)
         Y = beta * X + eta_y - np.mean(eta_y)
 
     # student-t distribution
-    if distribution == 'student-t':
+    elif distribution == 'student-t':
         df = 2.74
         from scipy.stats import t
         eta_x = t.rvs(df, size=n)
@@ -135,7 +135,7 @@ def generate_syn_data(n, beta, distribution):
         eta_y = chi2.rvs(df, size=1000)
         X = eta_x - np.mean(eta_x)
         Y = beta * X + eta_y - np.mean(eta_y)
-    return np.column_stack((X, Y, Z1, Z2))
+    return np.column_stack((X, Y))
 
 
 """

@@ -153,7 +153,18 @@ def KDEVM_entropy(samples,beta,gamma):
     return est_h
 
 ### KDE + Von mises for mutual information
+def KDEVM_mutual_information(samples,beta,gamma):
 
+    samplesx = np.expand_dims(samples[:, 0], axis=1)
+    samplesy = np.expand_dims(samples[:, 1], axis=1)
+
+    hx = KDEVM_entropy(samplesx,beta,gamma)
+    hy = KDEVM_entropy(samplesy,beta,gamma)
+    hxy = KDEVM_entropy(samples,beta,gamma)
+
+    return (hx+hy-hxy)
+
+''' 
 def KDEVM_mutual_information(samples,beta,gamma):
     n,d = samples.shape
     samplesxz = np.column_stack((samples[:,0],samples[:,2:]))
@@ -166,16 +177,22 @@ def KDEVM_mutual_information(samples,beta,gamma):
     hxyz = KDEVM_entropy(samples,beta,gamma)
 
     return (hxz+hyz-hz-hxyz)
-
+'''
 ## define monte carlo integrate
 
 def monte_carlo_integrate(f,d,a=0.,b=1.,error=5e-2):
     n_points = int(1/(error**2))
     sample_points = np.random.uniform(a,b,size=(n_points,d))
-    return (1./(n_points))*np.sum([f(sample_points[i,:]) for i in range(n_points)])
+    Temp = []
+    for i in range(n_points):
+        a = f(sample_points[i, :])
+        Temp.append(a)
+    temp = np.sum(Temp)
+    integral = (1./(n_points))*temp
+    return integral
 
 # KDE + plugin for entropy
-
+import math
 def KDEPI_entropy(samples,beta,gamma,x_min=0.,x_max=1.):
     n,d = samples.shape
 
@@ -188,24 +205,34 @@ def KDEPI_entropy(samples,beta,gamma,x_min=0.,x_max=1.):
 
     def g(x):
         t = KDE(x,kernel,samples1,beta,h)
-        return -t*np.log(t)
-    return monte_carlo_integrate(g,d,x_min,x_max,error=5e-2)
+        return -t*math.log(np.abs(t)+1)
+
+    def monte_carlo_integrate_kdepi(f, d, a=0., b=1., error=5e-2):
+        n_points = int(1 / (error ** 2))
+        sample_points = np.random.uniform(a, b, size=(n_points, d))
+        Temp = []
+        for i in range(n_points):
+            a = f(sample_points[i, :])
+            Temp.append(a)
+        temp = sum(Temp)
+        integral = (1. / (n_points)) * temp
+        return integral
+    results = monte_carlo_integrate_kdepi(g,d,x_min,x_max,error=5e-2)
+    return results
 
 
 # KDE + plugin for mutual information
 
 def KDEPI_mutual_information(samples,beta,gamma):
-    n,d = samples.shape
-    samplesxz = np.column_stack((samples[:,0],samples[:,2:]))
-    samplesyz = np.column_stack((samples[:,1],samples[:,2:]))
-    samplesz = samples[:,2:]
 
-    hxz = KDEPI_entropy(samplesxz,beta,gamma)
-    hyz = KDEPI_entropy(samplesyz,beta,gamma)
-    hz = KDEPI_entropy(samplesz,beta,gamma)
-    hxyz = KDEPI_entropy(samples,beta,gamma)
+    samplesx = np.expand_dims(samples[:, 0], axis=1)
+    samplesy = np.expand_dims(samples[:, 1], axis=1)
 
-    return (hxz+hyz-hz-hxyz)
+    hx = KDEPI_entropy(samplesx,beta,gamma)
+    hy = KDEPI_entropy(samplesy,beta,gamma)
+    hxy = KDEPI_entropy(samples,beta,gamma)
+
+    return (hx+hy-hxy)
 
 """
 Baseline 2: KNN-Based estimator
@@ -250,7 +277,7 @@ def KNNVM_entropy(samples):
 # KNN + Von Mises for mutual information
 
 def KNNVM_mutual_information(samples):
-    n,d = samples.shape
+    '''
     samplesxz = np.column_stack((samples[:,0],samples[:,2:]))
     samplesyz = np.column_stack((samples[:,1],samples[:,2:]))
     samplesz = samples[:,2:]
@@ -261,20 +288,30 @@ def KNNVM_mutual_information(samples):
     hxyz = KNNVM_entropy(samples)
 
     return (hxz+hyz-hz-hxyz)
+    '''
+    samplesx = np.expand_dims(samples[:, 0], axis=1)
+    samplesy = np.expand_dims(samples[:, 1], axis=1)
 
+    hx = KNNVM_entropy(samplesx)
+    hy = KNNVM_entropy(samplesy)
+    hxy = KNNVM_entropy(samples)
+
+    return (hx+hy-hxy)
 # KNN + plugin for entropy
 
 def KNNPI_entropy(samples,x_min=0.,x_max=1.):
     n,d = samples.shape
     def g(x):
         t = KNNDE(x,samples)
-        return -t*np.log(t)
+        return -t*np.log(abs(t) + 1)
+
     return monte_carlo_integrate(g,d,x_min,x_max,error=5e-3)
 
 
 # KNN + plugin for mutual information
 
 def KNNPI_mutual_information(samples):
+    '''
     n,d = samples.shape
     samplesxz = np.column_stack((samples[:,0],samples[:,2:]))
     samplesyz = np.column_stack((samples[:,1],samples[:,2:]))
@@ -286,7 +323,15 @@ def KNNPI_mutual_information(samples):
     hxyz = KNNPI_entropy(samples)
 
     return (hxz+hyz-hz-hxyz)
+    '''
+    samplesx = np.expand_dims(samples[:, 0], axis=1)
+    samplesy = np.expand_dims(samples[:, 1], axis=1)
 
+    hx = KNNPI_entropy(samplesx)
+    hy = KNNPI_entropy(samplesy)
+    hxy = KNNPI_entropy(samples)
+
+    return (hx+hy-hxy)
 """
 Baseline 3: OT-Based tests
 """
